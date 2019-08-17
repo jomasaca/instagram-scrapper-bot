@@ -78,7 +78,7 @@ class IGImages:
                 except Exception as ex:
                     print("It's a video or something went wrong, it's not possible to download it yet")
                     time.sleep(10)
-
+""" MAKING MAGIC HERE """
 tag = raw_input('Write hashtag: ')
 dig = IGImages('USERNAME', 'PASSWORD', tag)
 dig.login()
