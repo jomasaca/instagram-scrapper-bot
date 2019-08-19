@@ -17,7 +17,7 @@ class IGImages:
         self.out_folder = out_folder
         if not os.path.isdir(out_folder):
             os.mkdir(out_folder)
-        self.bot = webdriver.Firefox()
+        self.bot = webdriver.Chrome("/home/jomasaca/Desktop/Bots/Download IG Images/chromedriver")
     
     def login(self):
         bot = self.bot
@@ -53,33 +53,54 @@ class IGImages:
                 bot.get(link)
 
                 try:
-                    url = bot.find_element_by_xpath('//div[@class="KL4Bh"]//img').get_attribute('src')
+
+                    try:
+                        url = bot.find_element_by_xpath('//div[@class="KL4Bh"]//img').get_attribute('src')
+                        
+                    except:
+                        url = bot.find_element_by_xpath('//div[@class="_5wCQW"]//video').get_attribute('src')
+
                     """Download image at 'url' to images/hashtag/"""
                     image_url = url.split("/")[-1]
-                    remove = "?_nc_ht=instagram.fntr6-1.fna.fbcdn.net"
+
+                    """ REMOVE PART OF THE STRING FROM FILENAME"""
+                    remove = "?_nc_ht"
                     pre_filename = image_url.split(remove, 1)[0]
+
+                    """ DOWNLOAD DATA (IMG/VIDEO) TO OUT_PATH"""
                     filename = hashtag+"_"+pre_filename
                     out_path = out_folder+"/"+filename
                     urlretrieve(url, out_path)
 
                     """ Download text """
-                    text = bot.find_element_by_xpath('//div[@class="C4VMK"]//span')
-                    plain_text = html2text.html2text(text)
-                    remove_text_filename = "."
-                    text_filename = filename.split(remove_text_filename, 1)[0]
-                    out_path_text = out_folder+"/"+text_filename+".txt"
-                    text_file = open(out_path_text, "w")
-                    text_file.write(format(plain_text))
-                    text_file.close()
+                    plain_text = bot.find_element_by_xpath('//div[@class="C4VMK"]//span')
+                    text_data = plain_text.text
+                    text_data = text_data.encode('utf-8')
+
+                    if text_data == "":
+                        print("The image below doesn't have caption")
+                    else:
+                        remove_text_filename = "."
+                        text_filename = filename.split(remove_text_filename, 1)[0]
+                        out_path_text = out_folder+"/"+text_filename+".txt"
+                        text_file = open(out_path_text, "w")
+                        text_file.write(text_data)
+                        text_file.close()
 
 
                     msg = "Downloaded image "+out_path
                     print(msg)
                 except Exception as ex:
-                    print("It's a video or something went wrong, it's not possible to download it yet")
+                    print(ex)
                     time.sleep(10)
+
+        """ CLOSE BROWSER """
+        bot.quit()
+
 """ MAKING MAGIC HERE """
+user = raw_input('Write your Username: ')
+password = raw_input('Write your Password: ')
 tag = raw_input('Write hashtag: ')
-dig = IGImages('USERNAME', 'PASSWORD', tag)
+dig = IGImages(user, password, tag)
 dig.login()
 dig.search_images()
